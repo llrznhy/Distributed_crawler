@@ -1,5 +1,7 @@
 package com.example.crawler.distributed.queue;
 
+import com.example.crawler.distributed.downloader.DownloadResult;
+
 /**
  * 消息队列接口
  * 定义消息队列的基本操作
@@ -23,4 +25,6 @@ public interface MessageQueue {
      * 关闭消息队列连接
      */
     void close();
+
+    DownloadResult poll(String downloadResults, String url);
 }

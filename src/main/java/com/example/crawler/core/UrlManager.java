@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * d. URL分发策略：通过优先级和深度实现多种分发策略
  */
 
-public abstract class UrlManager {
+public class UrlManager {
     private static final Logger logger = LoggerFactory.getLogger(UrlManager.class);
 
     // URL优先级队列
@@ -36,7 +36,9 @@ public abstract class UrlManager {
     // 最大深度限制
     private final int maxDepth;
 
-    public abstract void close();
+    public void close() {
+
+    }
 
     public static class UrlSeed implements Comparable<UrlSeed> {
         // 将 private 改为 package-private

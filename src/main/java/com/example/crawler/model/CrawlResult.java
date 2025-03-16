@@ -15,13 +15,24 @@ public class CrawlResult {
     private int depth;
     private String contentType;
     private long contentLength;
+    private List<String> extractedUrls;  // 新增：网页内的超链接列表
 
     // 构造函数
-    public CrawlResult() {
+    public CrawlResult(String url, String content, int statusCode, String title, List<String> extractedUrls) {
         this.metadata = new HashMap<>();
         this.links = new HashSet<>();
         this.crawlTime = System.currentTimeMillis();
+        this.url = url;
+        this.content = content;
+        this.statusCode = statusCode;
+        this.title = title;
+        this.extractedUrls = extractedUrls;
     }
+
+    public CrawlResult() {
+
+    }
+
 
     // 创建构建器模式的静态方法
     public static CrawlResult.Builder builder() {

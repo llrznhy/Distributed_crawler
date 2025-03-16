@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>分布式爬虫控制台</title>
+</head>
+<body>
+<h1>🚀 分布式爬虫系统控制台</h1>
+
+<p>爬虫状态: <span th:text="${status} ? '运行中 🟢' : '已停止 🔴'"></span></p>
+<!--<p>已处理页面数: <span th:text="${processedPages}"></span></p>-->
+
+<form th:action="@{/start}" method="post">
+    <input type="text" name="seedUrl" placeholder="请输入种子URL" required>
+    <input type="number" name="maxPages" placeholder="最大页数" required>
+    <button type="submit">启动爬虫</button>
+</form>
+
+<form th:action="@{/stop}" method="post">
+    <button type="submit">停止爬虫</button>
+</form>
+</body>
+</html>

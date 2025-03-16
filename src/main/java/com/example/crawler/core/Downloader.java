@@ -17,7 +17,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.io.IOException;
 
-public abstract class Downloader {
+public class Downloader {
     private static final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
     private final RobotsChecker robotsChecker;
@@ -112,5 +112,7 @@ public abstract class Downloader {
         }
     }
 
-    public abstract void close();
+    public void close() {
+
+    }
 }

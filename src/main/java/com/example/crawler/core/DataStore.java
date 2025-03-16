@@ -38,6 +38,7 @@ public class DataStore {
     private final ObjectMapper objectMapper;
     private final String baseDir;
     private final String format;
+//    private final String storagePath;
 
     public DataStore(String baseDir, String format) {
         this.baseDir = baseDir;
@@ -46,17 +47,31 @@ public class DataStore {
         createStorageDirectory();
     }
 
+
+//    private void createStorageDirectory() {
+//        try {
+//            Path dir = Paths.get(baseDir);
+//            if (!Files.exists(dir)) {
+//                Files.createDirectories(dir);
+//                logger.info("Created storage directory: {}", baseDir);
+//            }
+//        } catch (IOException e) {
+//            logger.error("Failed to create storage directory: {}", e.getMessage());
+//        }
+//    }
+
     private void createStorageDirectory() {
         try {
             Path dir = Paths.get(baseDir);
             if (!Files.exists(dir)) {
                 Files.createDirectories(dir);
-                logger.info("Created storage directory: {}", baseDir);
+                logger.info("Created storage directory: {}", dir.toAbsolutePath());
             }
         } catch (IOException e) {
             logger.error("Failed to create storage directory: {}", e.getMessage());
         }
     }
+
 
     /**
      * 生成文件名
@@ -93,7 +108,7 @@ public class DataStore {
         }
     }
 
-    public void store(CrawlResult result) {
+    public void store(CrawlResult result, String filename) {
         if (result == null) {
             return;
         }
@@ -119,10 +134,16 @@ public class DataStore {
         }
     }
 
+//    private void storeAsJson(CrawlResult result, Path filePath) throws IOException {
+//        objectMapper.writeValue(filePath.toFile(), result);
+//        logger.info("Stored JSON result to {}", filePath);
+//    }
+
     private void storeAsJson(CrawlResult result, Path filePath) throws IOException {
         objectMapper.writeValue(filePath.toFile(), result);
-        logger.info("Stored JSON result to {}", filePath);
+        logger.info("Successfully stored JSON to: {}", filePath.toAbsolutePath());
     }
+
 
     private String formatTimestamp(long timestamp) {
         try {

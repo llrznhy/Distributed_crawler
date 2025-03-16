@@ -1,5 +1,6 @@
 package com.example.crawler.distributed.parser;
 
+import com.example.crawler.core.DataStore;
 import com.example.crawler.core.Parser;
 import com.example.crawler.distributed.queue.MessageQueue;
 import com.example.crawler.model.CrawlResult;
@@ -56,9 +57,16 @@ public class DistributedParser extends Parser {
                 // 发送解析结果到存储队列
                 messageQueue.send("store_results", parseResult);
 
-                // 如果解析成功，发送新的URL到管理器
-                if (result != null && !result.getLinks().isEmpty()) {
-                    messageQueue.send("new_urls", result.getLinks());
+                // 直接存储解析结果
+                // ✅ 直接存储解析结果
+                if (result != null) {
+                    DataStore dataStore = new DataStore("crawler_data", "json");
+
+                    // 生成 JSON 文件名
+                    String filename = "wiki_" + result.getUrl().hashCode() + "_" + System.currentTimeMillis() + ".json";
+
+                    // ✅ 传入 filename
+                    dataStore.store(result, filename);
                 }
 
                 logger.debug("Parsed content from URL: {} in {}ms",

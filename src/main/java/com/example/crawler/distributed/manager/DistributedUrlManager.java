@@ -304,6 +304,9 @@ public class DistributedUrlManager extends UrlManager {
 
     private final RetryPolicy retryPolicy;
     private final Map<String, FailedUrl> failedUrls = new ConcurrentHashMap<>();
+    private Set<String> urlSet = ConcurrentHashMap.newKeySet();
+    private final Queue<CrawlRequest> urlQueue = new LinkedList<>();
+
 
     public DistributedUrlManager(String nodeId, int maxDepth, MessageQueue messageQueue,
                                  int batchSize, long distributionInterval) {
@@ -319,6 +322,7 @@ public class DistributedUrlManager extends UrlManager {
                 CrawlerConfig.getInt("url.retry.max", 3),
                 CrawlerConfig.getLong("url.retry.interval", 60000)
         );
+        this.urlSet = new HashSet<>();
 
         initializeDistributedSystem();
     }
@@ -474,6 +478,16 @@ public class DistributedUrlManager extends UrlManager {
         Map<String, List<String>> distribution =
                 loadBalancer.distributeUrls(Collections.singletonList(url), activeNodeIds);
 
+        logger.info("Adding URL: {} with depth {} to queue", url, depth);
+        logger.info("Active nodes: {}", activeNodeIds);
+        logger.info("URL distribution result: {}", distribution);
+
+        if (!urlSet.contains(url)) {
+            urlSet.add(url);
+            urlQueue.add(new CrawlRequest(url, depth));
+        }
+
+
         distribution.forEach((targetNodeId, urls) -> {
             if (urls.isEmpty()) return;
 
@@ -525,6 +539,11 @@ public class DistributedUrlManager extends UrlManager {
                 0, getQueueSize(), 0, 0, 0.0, 0.0);
         messageQueue.send("node_registration", status);
     }
+
+    public boolean hasUrl(String url) {
+        return urlSet.contains(url);
+    }
+
 
     private void sendHeartbeat() {
         NodeStatus status = new NodeStatus(nodeId, NodeStatus.NodeState.RUNNING,

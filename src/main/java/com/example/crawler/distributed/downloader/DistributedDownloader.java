@@ -34,11 +34,13 @@ public class DistributedDownloader extends Downloader {
     }
 
     private void initialize() {
+
         // 订阅下载任务
         messageQueue.subscribe("download_tasks", message -> {
             if (message.getContent() instanceof DownloadTask) {
                 DownloadTask task = (DownloadTask) message.getContent();
                 processDownloadTask(task);
+                logger.info("Received download task: {}", task.getUrl());
             }
         });
 

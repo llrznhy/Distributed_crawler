@@ -28,6 +28,7 @@ public class DownloadResult implements Serializable {
     public long getDownloadTime() { return downloadTime; }
     public String getNodeId() { return nodeId; }
 
+
     public static class Builder {
         private String url;
         private PageContent content;

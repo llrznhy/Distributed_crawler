@@ -1,5 +1,6 @@
 package com.example.crawler.distributed.queue;
 
+import com.example.crawler.distributed.downloader.DownloadResult;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -35,7 +36,7 @@ public class KafkaMessageQueue implements MessageQueue {
     public KafkaMessageQueue(String bootstrapServers, String groupId) {
         this.bootstrapServers = bootstrapServers;
         this.groupId = groupId;
-        this.producer = createProducer();
+        this.producer = createProducer(); // 确保 createProducer 已定义
         this.consumers = new ConcurrentHashMap<>();
         this.consumerThreads = new ConcurrentHashMap<>();
         this.running = new AtomicBoolean(true);
@@ -44,15 +45,12 @@ public class KafkaMessageQueue implements MessageQueue {
     @Override
     public void send(String topic, Object message) {
         try {
-            ProducerRecord<String, String> record =
-                    new ProducerRecord<>(topic, message.toString());
+            ProducerRecord<String, String> record = new ProducerRecord<>(topic, message.toString());
             producer.send(record, (metadata, exception) -> {
                 if (exception != null) {
-                    logger.error("Error sending message to topic {}: {}",
-                            topic, exception.getMessage());
+                    logger.error("Error sending message to topic {}: {}", topic, exception.getMessage());
                 } else {
-                    logger.debug("Message sent to topic {}, partition {}",
-                            metadata.topic(), metadata.partition());
+                    logger.debug("Message sent to topic {}, partition {}", metadata.topic(), metadata.partition());
                 }
             });
         } catch (Exception e) {
@@ -76,21 +74,18 @@ public class KafkaMessageQueue implements MessageQueue {
         executorService.submit(() -> {
             try {
                 while (running.get()) {
-                    ConsumerRecords<String, String> records =
-                            consumer.poll(Duration.ofMillis(100));
+                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                     records.forEach(record -> {
                         try {
                             Message msg = new Message(topic, record.value(), null);
                             handler.handle(msg);
                         } catch (Exception e) {
-                            logger.error("Error handling message from topic {}: {}",
-                                    topic, e.getMessage());
+                            logger.error("Error handling message from topic {}: {}", topic, e.getMessage());
                         }
                     });
                 }
             } catch (Exception e) {
-                logger.error("Error in consumer thread for topic {}: {}",
-                        topic, e.getMessage());
+                logger.error("Error in consumer thread for topic {}: {}", topic, e.getMessage());
             } finally {
                 consumer.close();
             }
@@ -101,28 +96,26 @@ public class KafkaMessageQueue implements MessageQueue {
     public void close() {
         running.set(false);
 
-        // 关闭生产者
         if (producer != null) {
             producer.close();
         }
 
-        // 关闭所有消费者线程
         consumerThreads.values().forEach(ExecutorService::shutdownNow);
-
-        // 关闭所有消费者
         consumers.values().forEach(KafkaConsumer::close);
-
         consumers.clear();
         consumerThreads.clear();
+    }
+
+    @Override
+    public DownloadResult poll(String downloadResults, String url) {
+        return null;
     }
 
     private KafkaProducer<String, String> createProducer() {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class.getName());
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.ACKS_CONFIG, "all");
         return new KafkaProducer<>(props);
     }
@@ -131,10 +124,8 @@ public class KafkaMessageQueue implements MessageQueue {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);

@@ -25,6 +25,7 @@ public class ParseResult implements Serializable {
     public boolean isSuccess() { return success; }
     public String getError() { return error; }
 
+
     public static class Builder {
         private CrawlResult result;
         private String sourceNodeId;
